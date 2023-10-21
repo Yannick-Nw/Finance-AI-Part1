@@ -1,36 +1,37 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from tqdm import tqdm
-from Visualization.plot_stock_strategy import plot_stock_strategy
-
-def get_percentage(low, difference):
-    return difference / low * 100
-
+from lib.Visualization.plot_stock_strategy import plot_stock_strategy
+from lib.Evalutation.compute_best_parameters import compute_best_parameters
+import itertools
 
 # Seconds needs to be higher
-lower_averages = [500]
-higher_averages = [520]
+averages = [i for i in range(10, 2000, 2)]
 
-# Always start at the highest to save the same timeframe
-highest = max(higher_averages)
+combos = set(itertools.combinations(averages, 2))
+combos = [com for com in combos if com[1] > com[0]]
+print(combos)
 
 # Load data
 df = pd.read_csv('Data/MSCI GLOBAL.csv', sep=',')
 averages = dict()
 
-for lower_average, higher_average in tqdm(zip(lower_averages, higher_averages) ,total=len(lower_averages)):
-    df['firstSMA'] = df['Close'].rolling(window=lower_average).mean()
-    df['secondSMA'] = df['Close'].rolling(window=higher_average).mean()
-    balance = 0
-    buy = 0
-    buying = False
 
+def compute_strategy(df, parameters):
+    df['firstSMA'] = df['Close'].rolling(window=parameters[0]).mean()
+    df['secondSMA'] = df['Close'].rolling(window=parameters[1]).mean()
     df["buying"] = df["firstSMA"] < df['secondSMA']
+    return df
+
+
+df, best_parameters, best_course = compute_best_parameters(df,
+                                                           combos,
+                                                           compute_strategy)
 
 def function_to_plot():
-    plt.plot(df['firstSMA'][higher_averages[0]:].reset_index(drop=True), label=f'{lower_average}-day SMA', color='red')
-    plt.plot(df['secondSMA'][higher_averages[0]:].reset_index(drop=True), label=f'{higher_average}-day SMA', color='black')
+    plt.plot(df['firstSMA'][best_parameters[1]:].reset_index(drop=True), label=f'{best_parameters[0]}-day SMA', color='red')
+    plt.plot(df['secondSMA'][best_parameters[1]:].reset_index(drop=True), label=f'{best_parameters[1]}-day SMA',
+             color='black')
 
 
-plot_stock_strategy(df[higher_average:].reset_index(drop=True), function_to_plot)
+plot_stock_strategy(df[best_parameters[1]:].reset_index(drop=True), function_to_plot)
 

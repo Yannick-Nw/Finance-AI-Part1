@@ -14,7 +14,7 @@ plot_stock_strategy(df[higher_average:].reset_index(drop=True), function_to_plot
 """
 
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 def _plot_entry(index, stock_entry, total_screen_height, total_screen_width):
     """
@@ -56,7 +56,7 @@ def plot_stock_strategy(df, function_to_plot=None):
     algorithm_course = [stock_entry["Close"]]
 
     for i, stock_entry in df_iter:
-        if stock_entry["buying"]:
+        if stock_entry["buying"] and df["buying"][i - 1] or not stock_entry["buying"] and df["buying"][i - 1]:
             algorithm_course.append(algorithm_course[-1] + (stock_entry["Close"] - df["Close"][i - 1]))
         else:
             algorithm_course.append(algorithm_course[-1])
@@ -64,6 +64,7 @@ def plot_stock_strategy(df, function_to_plot=None):
         if stock_entry["buying"] != df["buying"][i - 1]:
             _plot_entry(i, stock_entry, total_screen_height, len(df))
 
+    print(algorithm_course[-1])
     plt.plot(algorithm_course, label=f'Algorithm course', color='green')
     plt.title('Closing Prices two Moving Average')
     plt.legend()
