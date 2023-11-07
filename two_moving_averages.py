@@ -41,9 +41,9 @@ axes.plot(df["Close"], label="Closing Prices", lw=0.5, color="blue")
 
 fig.legend()
 
-start_capital = 16000
+start_capital = 4000
 total_days = len(df)
-steps = 120
+steps = 30
 start_price = df["Close"][0]
 monthly_capital = start_capital / total_days * steps
 
@@ -51,15 +51,8 @@ monthly_capital = start_capital / total_days * steps
 fig, axes = plt.subplots(1, 1, num=2)
 
 # Invest once
-axes.plot(
-    (df["Close"] / start_price) * start_capital,
-    label="Invest once",
-    lw=0.5,
-    color="blue",
-)
 
 total_stocks = 0
-monthly_investment = []
 monthly_value = []
 for i in range(0, total_days):
     cur_step = i // steps
@@ -67,46 +60,60 @@ for i in range(0, total_days):
     if i % steps == 0:
         total_stocks += monthly_capital / df["Close"][i]
 
-    monthly_investment.append(monthly_capital * cur_step)
     monthly_value.append(total_stocks * df["Close"][i])
-
-axes.plot(
-    monthly_investment,
-    label="Monthly investment",
-    lw=0.5,
-    color="green",
-)
-axes.plot(
-    monthly_value,
-    label="Invest monthly",
-    lw=0.5,
-    color="red",
-)
 
 algorithm_course = calculate_stock_strategy(
     axes,
     df,
 )
-axes.plot(
-    (algorithm_course / start_price) * start_capital,
-    label=f"Algorithm course invest once",
-    color="purple",
-)
 
-total_stocks = 0
-monthly_value = []
+alg_total_stocks = 0
+alg_monthly_value = []
 for i in range(0, total_days):
     cur_step = i // steps
 
     if i % steps == 0:
-        total_stocks += monthly_capital / algorithm_course[i]
+        alg_total_stocks += monthly_capital / algorithm_course[i]
 
-    monthly_value.append(total_stocks * algorithm_course[i])
+    alg_monthly_value.append(alg_total_stocks * algorithm_course[i])
+
+all_in_value = (df["Close"] / start_price) * start_capital
+alg_all_in_value = (algorithm_course / start_price) * start_capital
 
 axes.plot(
+    all_in_value,
+    label="All-in account",
+    lw=0.5,
+    color="blue",
+)
+axes.plot(
     monthly_value,
-    label=f"Algorithm course invest monthly",
+    label="Monthly account",
+    lw=0.5,
+    color="red",
+)
+axes.plot(
+    alg_all_in_value,
+    label=f"All-in account via algorithm",
+    color="purple",
+)
+axes.plot(
+    alg_monthly_value,
+    label=f"Monthly account via algorithm",
     color="brown",
+)
+
+
+monthly_investment = []
+for i in range(0, total_days):
+    monthly_investment.append(monthly_capital * (i // steps))
+
+axes.plot(
+    monthly_investment,
+    label="Capital of monthly account",
+    lw=0.5,
+    color="green",
+    alpha=0.5,
 )
 
 fig.legend()
