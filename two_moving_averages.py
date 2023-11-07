@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from lib.Visualization.plot_stock_strategy import calculate_stock_strategy
+from lib.Visualization.plot_stock_strategy import (
+    calculate_stock_strategy,
+    plot_profit_fields,
+)
 from lib.Evalutation.compute_best_parameters import compute_best_parameters
 import itertools
 
@@ -9,7 +12,7 @@ averages = [i for i in range(100, 200, 2)]
 
 combos = set(itertools.combinations(averages, 2))
 combos = [com for com in combos if com[1] > com[0]]
-combos = [(10, 30)]
+combos = [(25, 100)]
 # Load data
 df: pd.DataFrame = pd.read_csv("Data/MSCI GLOBAL.csv", sep=",")
 df = df.dropna().reset_index(drop=True)
@@ -102,7 +105,7 @@ axes.plot(
     label=f"Monthly account via algorithm",
     color="brown",
 )
-
+plot_profit_fields(axes, list(df["buying"]), list(alg_all_in_value))
 
 monthly_investment = []
 for i in range(0, total_days):

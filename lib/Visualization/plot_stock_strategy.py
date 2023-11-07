@@ -18,16 +18,25 @@ from matplotlib import figure
 from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
+from pandas import DataFrame
+
+
+def plot_profit_fields(ax: Axes, buying_list: list[bool], chart: list[float]):
+    last_action_entry = (0, chart[0])
+    for i, to_buy in enumerate(buying_list[1:]):
+        if to_buy != buying_list[i - 1]:
+            last_index, last_entry = last_action_entry
+            if not to_buy:
+                _plot_entry(ax, last_index, i, last_entry, chart[i])
+            last_action_entry = (i, chart[i])
 
 
 def _plot_entry(
+    ax: Axes,
     first_index,
     second_index,
     first_entry,
     second_entry,
-    total_screen_height,
-    total_screen_width,
-    ax: Axes,
 ):
     """
     index (int): The index of the stock entry.
@@ -35,25 +44,10 @@ def _plot_entry(
     total_screen_height (float): The difference between the first and the last closing prices in the dataset.
     total_screen_width (float): The total width of the screen/plot.
     """
-    if not first_entry["buying"]:
-        return
-    arrow_length = total_screen_height / 4
 
-    head_length = arrow_length / 16
-    head_width = total_screen_width / 200
-    color = "red" if second_entry["Close"] < first_entry["Close"] else "green"
-    ax.arrow(
-        first_index,
-        first_entry["Close"],
-        second_index - first_index,
-        second_entry["Close"] - first_entry["Close"],
-        fc=color,
-        ec=color,
-        lw=2,
-    )
-
+    color = "red" if second_entry < first_entry else "green"
     ax.fill_betweenx(
-        [0, max(first_entry["Close"], second_entry["Close"])],
+        [0, max(first_entry, second_entry)],
         first_index,
         second_index,
         facecolor=color,
