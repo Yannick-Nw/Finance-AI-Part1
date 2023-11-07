@@ -40,7 +40,7 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
     best_parameters = None
     best_course = -float("inf")
 
-    for parameters in parameters_range:
+    for parameters in tqdm(parameters_range):
         compute_strategy(df, parameters)
         buying = df["buying"].values
         close = df["Close"].values

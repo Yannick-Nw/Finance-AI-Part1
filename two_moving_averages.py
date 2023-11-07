@@ -8,11 +8,11 @@ from lib.Evalutation.compute_best_parameters import compute_best_parameters
 import itertools
 
 # Seconds needs to be higher
-averages = [i for i in range(100, 200, 2)]
+averages = [i for i in range(10, 250, 2)]
 
 combos = set(itertools.combinations(averages, 2))
 combos = [com for com in combos if com[1] > com[0]]
-combos = [(25, 100)]
+
 # Load data
 df: pd.DataFrame = pd.read_csv("Data/MSCI GLOBAL.csv", sep=",")
 df = df.dropna().reset_index(drop=True)
@@ -27,22 +27,21 @@ def compute_strategy(df, parameters):
 
 
 df, best_parameters, best_course = compute_best_parameters(df, combos, compute_strategy)
-
+print(best_parameters)
 
 fig, axes = plt.subplots(1, 1, num=1)
 axes.plot(
-    df["firstSMA"][best_parameters[1] :].reset_index(drop=True),
+    df["firstSMA"][best_parameters[1] :],
     label=f"{best_parameters[0]}-day SMA",
     color="brown",
 )
 axes.plot(
-    df["secondSMA"][best_parameters[1] :].reset_index(drop=True),
+    df["secondSMA"][best_parameters[1] :],
     label=f"{best_parameters[1]}-day SMA",
     color="black",
 )
 axes.plot(df["Close"], label="Closing Prices", lw=0.5, color="blue")
 
-fig.legend()
 
 start_capital = 4000
 total_days = len(df)
@@ -51,6 +50,8 @@ start_price = df["Close"][0]
 monthly_capital = start_capital / total_days * steps
 
 
+plt.legend(loc="upper left")
+plt.ticklabel_format(style="plain")
 fig, axes = plt.subplots(1, 1, num=2)
 
 # Invest once
@@ -119,8 +120,7 @@ axes.plot(
     alpha=0.5,
 )
 
-fig.legend()
-
-
+plt.legend(loc="upper left")
+plt.ticklabel_format(style="plain")
 plt.tight_layout()
 plt.show()
