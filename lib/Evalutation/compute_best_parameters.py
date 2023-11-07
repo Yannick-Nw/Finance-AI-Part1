@@ -1,7 +1,6 @@
 """
 Usage:
 import pandas as pd
-import itertools
 
 # Define the strategy function
 def compute_strategy(df, parameters):
@@ -14,6 +13,7 @@ def compute_strategy(df, parameters):
 df = pd.read_csv('Data/MSCI GLOBAL.csv', sep=',')
 
 # Define parameter combinations
+# Parameters can have custom sizes, but all tuples need to have the same size.
 averages = [(10, 20), (20,30)]
 
 
@@ -45,7 +45,6 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
         buying = df["buying"].values
         close = df["Close"].values
         # Using numpy for faster computation
-
         diff = np.where(
             (buying[:-1] & buying[1:]) | (buying[:-1] & ~buying[1:]),
             close[1:] - close[:-1],
@@ -59,7 +58,7 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
         if algorithm_course > best_course:
             best_course = algorithm_course
             best_parameters = parameters
-
+    print(best_course)
     return compute_strategy(df, best_parameters), best_parameters, best_course
 
 
