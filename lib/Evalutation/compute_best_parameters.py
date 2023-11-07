@@ -40,7 +40,7 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
     best_parameters = None
     best_course = -float("inf")
 
-    for parameters in tqdm(parameters_range, total=len(parameters_range)):
+    for parameters in parameters_range:
         compute_strategy(df, parameters)
         buying = df["buying"].values
         close = df["Close"].values
@@ -48,7 +48,7 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
         diff = np.where(
             (buying[:-1] & buying[1:]) | (buying[:-1] & ~buying[1:]),
             close[1:] - close[:-1],
-            0
+            0,
         )
         # The last entry is not considerd above
         last_diff = close[-1] - close[-2] if buying[-1] else 0
@@ -58,7 +58,5 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
         if algorithm_course > best_course:
             best_course = algorithm_course
             best_parameters = parameters
-    print(best_course)
+
     return compute_strategy(df, best_parameters), best_parameters, best_course
-
-
