@@ -61,22 +61,10 @@ def calculate_stock_strategy(axes: Axes, df, invest_per_month=100):
     It should have columns "Close" (closing prices) and "buying" (boolean values indicating whether a
     stock is being bought on a particular day).
     """
-    axes.set_title("Stock Course with strategy")
-    axes.set_xlabel("Days")
-    axes.set_ylabel("$")
-
-    total_screen_height = abs(df["Close"][0] - df["Close"][len(df) - 1])
-
     df_iter = df.iterrows()
-    index, stock_entry = next(df_iter)
-    algorithm_course = [stock_entry["Close"]]
+    _, stock_entry = next(df_iter)
 
-    buying_per_month = {
-        "course": [stock_entry["Close"]],
-        "invested_money": 0,
-        "uninvested_money": invest_per_month,
-    }
-    last_action_entry = (index, stock_entry)
+    algorithm_course = [stock_entry["Close"]]
     for i, stock_entry in df_iter:
         # Sell when there is a change. There is one day where you still buy while buying is false
         # this is because you could not have known that the change will come tomorrow so you have to hold it until
@@ -91,23 +79,7 @@ def calculate_stock_strategy(axes: Axes, df, invest_per_month=100):
             algorithm_course.append(
                 algorithm_course[-1] + (stock_entry["Close"] - df["Close"][i - 1])
             )
-            buying_per_month["course"].append(
-                algorithm_course[-1] + (stock_entry["Close"] - df["Close"][i - 1])
-            )
         else:
             algorithm_course.append(algorithm_course[-1])
-
-        if stock_entry["buying"] != df["buying"][i - 1]:
-            last_index, last_entry = last_action_entry
-            # _plot_entry(
-            #     last_index,
-            #     i,
-            #     last_entry,
-            #     stock_entry,
-            #     total_screen_height,
-            #     len(df),
-            #     axes,
-            # )
-            # last_action_entry = (i, stock_entry)
 
     return algorithm_course
