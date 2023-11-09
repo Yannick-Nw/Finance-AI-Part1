@@ -55,7 +55,7 @@ def _plot_entry(
     )
 
 
-def calculate_stock_strategy(axes: Axes, df, invest_per_month=100):
+def calculate_stock_strategy(df):
     """
     df (DataFrame): A pandas DataFrame containing stock data.
     It should have columns "Close" (closing prices) and "buying" (boolean values indicating whether a
