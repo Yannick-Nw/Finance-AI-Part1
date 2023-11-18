@@ -1,7 +1,12 @@
-def compute_course(course, investment, steps=None):
+import numpy as np
+import numpy.typing as npt
+
+
+def compute_course(course: npt.NDArray[np.int], investment, steps=None):
     total_days = len(course)
     if not steps:
         return (course / course[0]) * investment
+
     alg_total_stocks = 0
     alg_monthly_value = []
     for i in range(0, total_days):

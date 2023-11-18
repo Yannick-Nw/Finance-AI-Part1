@@ -21,10 +21,10 @@ import numpy as np
 from pandas import DataFrame
 
 
-def plot_profit_fields(ax: Axes, buying_list: list[bool], chart: list[float], dates):
+def plot_profit_fields(ax: Axes, buying_signals: list[bool], chart: list[float], dates):
     last_action_entry = (0, chart[0])
-    for i, to_buy in enumerate(buying_list[1:]):
-        if to_buy != buying_list[i - 1]:
+    for i, to_buy in enumerate(buying_signals[1:], start=1):
+        if to_buy != buying_signals[i - 1]:
             last_index, last_entry = last_action_entry
             if not to_buy:
                 _plot_entry(ax, dates, last_index, i, last_entry, chart[i])
