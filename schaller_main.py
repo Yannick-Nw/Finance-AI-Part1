@@ -11,7 +11,7 @@ import datetime as dt
 def run():
     chart_manager = ChartManager()
     # Seconds needs to be higher
-    averages = [i for i in range(10, 20, 2)]
+    averages = [i for i in range(10, 100, 2)]
 
     combos = set(itertools.combinations(averages, 2))
     combos = [com for com in combos if com[1] > com[0]]
@@ -74,7 +74,7 @@ def run():
         label=f"{best_parameters[1]}-day SMA",
         color="black",
     )
-    plt.plot(df["Date"], df["Close"], label="Closing Prices", lw=0.5, color="blue")
+    plt.plot(chart_manager.chart["Date"], chart_manager.chart["Close"], label="Closing Prices", lw=0.5, color="blue")
 
     axes.xaxis.set_major_locator(mdates.YearLocator())
     axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
@@ -150,7 +150,7 @@ def run():
         f"Final amount for Monthly account via algorithm: {round(monthly_account_alg_values[-1], 1)}"
     )
 
-    plot_profit_fields(axes, list(chart_manager.chart["buying"]), alg_all_in_value, list(df["Date"]))
+    plot_profit_fields(axes, list(chart_manager.chart["buying"]), alg_all_in_value, list(chart_manager.chart["Date"]))
 
     axes.xaxis.set_major_locator(mdates.YearLocator())
     axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
