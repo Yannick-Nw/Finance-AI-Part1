@@ -23,12 +23,13 @@ from pandas import DataFrame
 
 def plot_profit_fields(ax: Axes, signals: list[bool], chart: list[float], dates):
     last_action_entry = (0, chart[0])
+    init_index, init_entry = last_action_entry
     for i, signal in enumerate(signals[1:], start=1):
-        if signal != signals[i - 1]:
-            last_index, last_entry = last_action_entry
-            if not signal:
-                _plot_entry(ax,  dates, signals[i - 1], last_index, i, last_entry, chart[i])
+        if not signal:
             last_action_entry = (i, chart[i])
+            init_index, init_entry = last_action_entry
+        if signal != signals[i - 1]:
+            _plot_entry(ax,  dates, signals[i - 1], init_index, i, init_entry, chart[i])
 
 
 def _plot_entry(

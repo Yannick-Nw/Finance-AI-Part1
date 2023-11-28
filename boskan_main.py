@@ -11,7 +11,7 @@ import numpy as np
 import datetime as dt
 
 from commons import *
-from lib.Visualization.plot_stock_strategy import plot_profit_fields
+from lib.visualization.plot_stock_strategy import plot_profit_fields
 
 
 def run():

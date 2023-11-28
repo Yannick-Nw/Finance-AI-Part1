@@ -21,7 +21,7 @@ class ChartManager:
 
         self.chart = df
 
-    def calculate_return(self, signals: Sequence[bool]) -> Sequence[float]:
+    def calculate_return(self, signals: Sequence[int]) -> Sequence[float]:
         if self.chart is None:
             raise Exception("Must first call 'load' before 'calculate_investment'!")
 

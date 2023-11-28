@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from lib.Visualization.plot_stock_strategy import (
+from lib.visualization.plot_stock_strategy import (
     calculate_stock_strategy,
     plot_profit_fields,
 )
-from lib.Evalutation.compute_best_parameters import compute_best_parameters
-from lib.Evalutation.compute_course import compute_course
+from lib.evalutation.compute_best_parameters import compute_best_parameters
+from lib.evalutation.compute_course import compute_course
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
