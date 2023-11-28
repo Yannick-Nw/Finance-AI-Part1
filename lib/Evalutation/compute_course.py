@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.typing as npt
+import commons as np
 
 
 def compute_course(course: npt.NDArray[np.int], investment, steps=None):

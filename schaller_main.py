@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from ..lib.Visualization.plot_stock_strategy import (
+from lib.Visualization.plot_stock_strategy import (
     calculate_stock_strategy,
     plot_profit_fields,
 )
@@ -94,8 +94,6 @@ def run():
     start_capital = 4000
     total_days = len(df)
     steps = 30
-    start_price = df["Close"][0]
-    monthly_capital = start_capital / total_days * steps
 
     plt.legend(loc="upper left")
     fig, axes = plt.subplots(1, 1, num=2)
@@ -176,3 +174,5 @@ def run():
     plt.tight_layout()
 
     plt.show()
+if __name__ == "__main__":
+    run()

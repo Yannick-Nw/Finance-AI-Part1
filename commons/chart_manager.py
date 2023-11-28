@@ -21,7 +21,7 @@ class ChartManager:
 
         self.chart = df
 
-    def calculate_return(self, buying_signals: Sequence[bool]) -> Sequence[float]:
+    def calculate_return(self, signals: Sequence[bool]) -> Sequence[float]:
         if self.chart is None:
             raise Exception("Must first call 'load' before 'calculate_investment'!")
 
@@ -35,14 +35,14 @@ class ChartManager:
             # a change comes.
             # Because we are adding the last day we are always one day behind
             if (
-                buying_signals[i]
-                and buying_signals[i - 1]
-                or not buying_signals[i]
-                and buying_signals[i - 1]
+                signals[i]
+                and signals[i - 1]
+                or not signals[i]
+                and signals[i - 1]
             ):
                 algorithm_course.append(
                     algorithm_course[-1]
-                    + (stock_entry["Close"] - self.chart["Close"][i - 1])
+                    + (stock_entry["Close"] - self.chart["Close"][i - 1]) * signals[i- 1]
                 )
             else:
                 algorithm_course.append(algorithm_course[-1])
