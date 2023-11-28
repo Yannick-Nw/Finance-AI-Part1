@@ -11,7 +11,7 @@ import datetime as dt
 def run():
     chart_manager = ChartManager()
     # Seconds needs to be higher
-    averages = [i for i in range(10, 100, 2)]
+    averages = [i for i in range(10, 1000, 2)]
 
     combos = set(itertools.combinations(averages, 2))
     combos = [com for com in combos if com[1] > com[0]]
@@ -24,18 +24,27 @@ def run():
         df["buying"] = df["firstSMA"] < df["secondSMA"]
         return df
 
-    df, best_parameters, best_course = compute_best_parameters(
+    best_parameters = compute_best_parameters(
         chart_manager.chart, combos, compute_strategy
     )
-    signals = df["buying"]
-    first_sma = df["firstSMA"]
-    second_sma = df["secondSMA"]
-
     shift_n = best_parameters[1]
+
+    first_sma = chart_manager.chart["Close"].rolling(window=best_parameters[0]).mean()
+    second_sma = chart_manager.chart["Close"].rolling(window=best_parameters[1]).mean()
+
     first_sma = first_sma.iloc[shift_n:].reset_index(drop=True)
     second_sma = second_sma.iloc[shift_n:].reset_index(drop=True)
-    signals = signals.iloc[shift_n:].reset_index(drop=True)
+
+    signals = np.where(
+        first_sma < second_sma,
+        100,
+        -100
+    )
+
     chart_manager.chart = chart_manager.chart.iloc[shift_n:].reset_index(drop=True)
+
+
+
     fig, axes = plt.subplots(1, 1, num=1)
 
     def update_axis_format(event):
@@ -94,10 +103,10 @@ def run():
     start_capital = 4000
 
     # Monthly capital calculations
-    monthly_capital = (
-        start_capital / len(df) * 30
-    )  # Example calculation, adjust as necessary
-    steps = 30  # Assuming 'steps' is defined as part of your algorithm
+    steps = 30
+
+    monthly_capital = start_capital / len(chart_manager.chart) *steps
+
 
     # All-in account plot
     all_in_account_values = chart_manager.invest_once(np.array(chart_manager.chart["Close"]), start_capital)
@@ -150,7 +159,8 @@ def run():
         f"Final amount for Monthly account via algorithm: {round(monthly_account_alg_values[-1], 1)}"
     )
 
-    plot_profit_fields(axes, list(chart_manager.chart["buying"]), alg_all_in_value, list(chart_manager.chart["Date"]))
+
+    plot_profit_fields(axes, signals, alg_all_in_value, list(chart_manager.chart["Date"]))
 
     axes.xaxis.set_major_locator(mdates.YearLocator())
     axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))

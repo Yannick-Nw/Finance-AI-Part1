@@ -59,4 +59,4 @@ def compute_best_parameters(df, parameters_range, compute_strategy):
             best_course = algorithm_course
             best_parameters = parameters
 
-    return compute_strategy(df, best_parameters), best_parameters, best_course
+    return best_parameters
