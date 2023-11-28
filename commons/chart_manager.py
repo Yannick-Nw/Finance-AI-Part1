@@ -12,10 +12,7 @@ class ChartManager:
         pass
 
     def load(self, name: str):
-        path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "Data", f"{name}.csv"
-        )
-        df: pd.DataFrame = pd.read_csv(path, sep=",")
+        df: pd.DataFrame = pd.read_csv(name, sep=",")
         df = df.dropna().reset_index(drop=True)
         df["Date"] = pd.to_datetime(df["Date"])
 
@@ -53,12 +50,21 @@ class ChartManager:
         return list((chart / chart[0]) * amount)
 
     def invest_rolling(
-        self, chart: Sequence[float], amount: int, interval_days: int = 30
+        self, chart: Sequence[float], start_amount: int, interval_amount, interval_days: int = 30
     ) -> Sequence[float]:
+        """
+        monthly_capital = (
+        start_capital / len(df) * interval_days
+        )
+        :param chart:
+        :param start_amount:
+        :param interval_amount:
+        :param interval_days:
+        :return:
+        """
         total_days = len(chart)
-        interval_amount = amount / total_days * interval_days
-        
-        bought_stocks = 0
+
+        bought_stocks = start_amount / chart[0]
         rolling_value = []
         for i in range(0, total_days):
             if i % interval_days == 0:

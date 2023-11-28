@@ -1,12 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from lib.visualization.plot_stock_strategy import (
-    calculate_stock_strategy,
-    plot_profit_fields,
-)
-from lib.evalutation.compute_best_parameters import compute_best_parameters
-from lib.evalutation.compute_course import compute_course
-import numpy as np
+from commons import *
 import itertools
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -15,18 +9,14 @@ import datetime as dt
 
 
 def run():
+    chart_manager = ChartManager()
     # Seconds needs to be higher
-    averages = [i for i in range(10, 1000, 2)]
+    averages = [i for i in range(10, 20, 2)]
 
     combos = set(itertools.combinations(averages, 2))
     combos = [com for com in combos if com[1] > com[0]]
-
     # Load data
-    df: pd.DataFrame = pd.read_csv("Data/STOXX50E.csv", sep=",")
-    df = df.dropna().reset_index(drop=True)
-    df["Date"] = pd.to_datetime(df["Date"])
-
-    averages = dict()
+    chart_manager.load("Data/STOXX50E.csv")
 
     def compute_strategy(df, parameters):
         df["firstSMA"] = df["Close"].rolling(window=parameters[0]).mean()
@@ -35,13 +25,18 @@ def run():
         return df
 
     df, best_parameters, best_course = compute_best_parameters(
-        df, combos, compute_strategy
+        chart_manager.chart, combos, compute_strategy
     )
+    signals = df["buying"]
+    first_sma = df["firstSMA"]
+    second_sma = df["secondSMA"]
 
+    shift_n = best_parameters[1]
+    first_sma = first_sma.iloc[shift_n:].reset_index(drop=True)
+    second_sma = second_sma.iloc[shift_n:].reset_index(drop=True)
+    signals = signals.iloc[shift_n:].reset_index(drop=True)
+    chart_manager.chart = chart_manager.chart.iloc[shift_n:].reset_index(drop=True)
     fig, axes = plt.subplots(1, 1, num=1)
-
-    N = 100
-    y = np.random.rand(N)
 
     def update_axis_format(event):
         ax = event.inaxes
@@ -68,14 +63,14 @@ def run():
         fig.canvas.draw_idle()
 
     axes.plot(
-        df["Date"][best_parameters[1] :],
-        df["firstSMA"][best_parameters[1] :],
+        chart_manager.chart["Date"],
+        first_sma,
         label=f"{best_parameters[0]}-day SMA",
         color="brown",
     )
     axes.plot(
-        df["Date"][best_parameters[1] :],
-        df["secondSMA"][best_parameters[1] :],
+        chart_manager.chart["Date"],
+        second_sma,
         label=f"{best_parameters[1]}-day SMA",
         color="black",
     )
@@ -89,16 +84,10 @@ def run():
     fig.autofmt_xdate()
     fig.canvas.mpl_connect("button_release_event", update_axis_format)
 
-    df = df.loc[best_parameters[1] :].reset_index()
-
-    start_capital = 4000
-    total_days = len(df)
-    steps = 30
-
     plt.legend(loc="upper left")
     fig, axes = plt.subplots(1, 1, num=2)
 
-    algorithm_course = calculate_stock_strategy(df)
+    algorithm_course = chart_manager.calculate_return(signals)
     # Assuming the compute_course function and df are defined elsewhere
 
     # Start capital
@@ -111,9 +100,9 @@ def run():
     steps = 30  # Assuming 'steps' is defined as part of your algorithm
 
     # All-in account plot
-    all_in_account_values = compute_course(np.array(df["Close"]), start_capital)
+    all_in_account_values = chart_manager.invest_once(np.array(chart_manager.chart["Close"]), start_capital)
     axes.plot(
-        df["Date"],
+        chart_manager.chart["Date"],
         all_in_account_values,
         label="All-in account",
         lw=0.5,
@@ -122,11 +111,11 @@ def run():
     print(f"Final amount for All-in account: {round(all_in_account_values[-1], 1)}")
 
     # Monthly account plot
-    monthly_account_values = compute_course(
-        np.array(df["Close"]), monthly_capital, steps
+    monthly_account_values = chart_manager.invest_rolling(
+        np.array(chart_manager.chart["Close"]), 0, monthly_capital, steps
     )
     axes.plot(
-        df["Date"],
+        chart_manager.chart["Date"],
         monthly_account_values,
         label="Monthly account",
         lw=0.5,
@@ -135,9 +124,10 @@ def run():
     print(f"Final amount for Monthly account: {round(monthly_account_values[-1], 1)}")
 
     # All-in account via algorithm plot
-    alg_all_in_value = compute_course(np.array(algorithm_course), start_capital)
+
+    alg_all_in_value = chart_manager.invest_once(np.array(algorithm_course), start_capital)
     axes.plot(
-        df["Date"],
+        chart_manager.chart["Date"],
         alg_all_in_value,
         label=f"All-in account via algorithm",
         color="purple",
@@ -147,11 +137,11 @@ def run():
     )
 
     # Monthly account via algorithm plot
-    monthly_account_alg_values = compute_course(
-        np.array(algorithm_course), monthly_capital, steps
+    monthly_account_alg_values = chart_manager.invest_rolling(
+        np.array(algorithm_course), 0, monthly_capital, steps
     )
     axes.plot(
-        df["Date"],
+        chart_manager.chart["Date"],
         monthly_account_alg_values,
         label=f"Monthly account via algorithm",
         color="brown",
@@ -160,7 +150,7 @@ def run():
         f"Final amount for Monthly account via algorithm: {round(monthly_account_alg_values[-1], 1)}"
     )
 
-    plot_profit_fields(axes, list(df["buying"]), alg_all_in_value, list(df["Date"]))
+    plot_profit_fields(axes, list(chart_manager.chart["buying"]), alg_all_in_value, list(df["Date"]))
 
     axes.xaxis.set_major_locator(mdates.YearLocator())
     axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
@@ -174,5 +164,7 @@ def run():
     plt.tight_layout()
 
     plt.show()
+
+
 if __name__ == "__main__":
     run()
