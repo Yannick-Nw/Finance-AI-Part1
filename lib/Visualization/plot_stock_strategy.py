@@ -21,18 +21,20 @@ import numpy as np
 from pandas import DataFrame
 
 
-def plot_profit_fields(ax: Axes, buying_signals: list[bool], chart: list[float], dates):
+def plot_profit_fields(ax: Axes, signals: list[bool], chart: list[float], dates):
     last_action_entry = (0, chart[0])
-    for i, to_buy in enumerate(buying_signals[1:], start=1):
-        if to_buy != buying_signals[i - 1]:
+    for i, signal in enumerate(signals[1:], start=1):
+        if signal != signals[i - 1]:
             last_index, last_entry = last_action_entry
-            if not to_buy:
-                _plot_entry(ax, dates, last_index, i, last_entry, chart[i])
+            if not signal:
+                _plot_entry(ax, signal, dates, last_index, i, last_entry, chart[i])
             last_action_entry = (i, chart[i])
 
 
 def _plot_entry(
     ax: Axes, dates,
+        signal,
+        
     first_index,
     second_index,
     first_entry,
@@ -45,7 +47,7 @@ def _plot_entry(
     total_screen_width (float): The total width of the screen/plot.
     """
 
-    color = "red" if second_entry < first_entry else "green"
+    color = "red" if second_entry - first_entry * signal < 0 else "green"
     ax.fill_betweenx(
         [0, max(first_entry, second_entry)],
         dates[first_index],
