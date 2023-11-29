@@ -174,6 +174,8 @@ def run():
     fig, axes = plt.subplots(1, 1, num=2)
 
     total_capital = 4000
+    steps = 30
+    monthly_capital = total_capital / len(chart_manager.chart) * steps
 
     invest_once_result = chart_manager.invest_once(chart_manager.chart["Close"], total_capital)
     axes.plot(
@@ -194,7 +196,7 @@ def run():
     )
 
 
-    invest_monthly_result = chart_manager.invest_rolling(chart_manager.chart["Close"], total_capital, 30)
+    invest_monthly_result = chart_manager.invest_rolling(chart_manager.chart["Close"], 0, monthly_capital, steps)
     axes.plot(
         chart_manager.chart["Date"],
         invest_monthly_result,
@@ -203,7 +205,7 @@ def run():
         color="red",
     )
 
-    invest_monthly_algorithm_result = chart_manager.invest_rolling(algorithm_course, total_capital, 30)
+    invest_monthly_algorithm_result = chart_manager.invest_rolling(algorithm_course, 0, monthly_capital, steps)
     axes.plot(
         chart_manager.chart["Date"],
         invest_monthly_algorithm_result,
@@ -212,7 +214,7 @@ def run():
         color="brown",
     )
 
-    no_invest_monthly_result = chart_manager.invest_rolling(np.repeat(1, len(chart_manager.chart)), total_capital, 30)
+    no_invest_monthly_result = chart_manager.invest_rolling(np.repeat(1, len(chart_manager.chart)), 0, monthly_capital, steps)
     axes.plot(
         chart_manager.chart["Date"],
         no_invest_monthly_result,

@@ -105,7 +105,7 @@ def run():
     # Monthly capital calculations
     steps = 30
 
-    monthly_capital = start_capital / len(chart_manager.chart) *steps
+    monthly_capital = start_capital / len(chart_manager.chart) * steps
 
 
     # All-in account plot

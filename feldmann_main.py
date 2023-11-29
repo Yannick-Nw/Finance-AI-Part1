@@ -18,13 +18,22 @@ def run():
     chart_manager = ChartManager()
     chart_manager.load("Data/MSCI GLOBAL.csv")
 
-    window_size = 100
-    sma = chart_manager.chart["Close"].rolling(window=window_size).mean()
+    window_size = 14
 
+    # Compute RSI
+    diff = chart_manager.chart["Close"].diff()
+    gain = (diff.clip(lower=0)).fillna(0)
+    loss = (-diff.clip(upper=0)).fillna(0)
+    avg_gain = gain.rolling(window=window_size, min_periods=1).mean()
+    avg_loss = loss.rolling(window=window_size, min_periods=1).mean()
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+
+    
     # So that the chart only starts when indicator is valid
-    shift_n = sma.first_valid_index()
+    shift_n = rsi.first_valid_index()
 
-    sma = sma.iloc[shift_n:].reset_index(drop=True)
+    rsi = rsi.iloc[shift_n:].reset_index(drop=True)
     chart_manager.chart = chart_manager.chart.iloc[shift_n:].reset_index(drop=True)
 
     """
@@ -34,7 +43,7 @@ def run():
     fig, axes = plt.subplots(1, 1, num=1)
 
     axes.plot(
-        chart_manager.chart["Date"], sma, label=f"{window_size} SMA", lw=0.5, color="red"
+        chart_manager.chart["Date"], rsi, label=f"RSI ({window_size})", lw=0.5, color="red"
     )
     axes.plot(
         chart_manager.chart["Date"],
@@ -47,7 +56,7 @@ def run():
     """
     Plot investing results
     """
-    buying_signals = chart_manager.chart["Close"] > sma
+    buying_signals = rsi > 60
     algorithm_course = chart_manager.calculate_return(buying_signals)
 
     plt.legend(loc="upper left")
