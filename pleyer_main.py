@@ -20,7 +20,7 @@ def run():
     chart_manager = ChartManager()
     chart_manager.load("Data/MSCI GLOBAL.csv")
 
-    window_size = 30
+    window_size = 24
     #14-Tage MA
     ma_data = chart_manager.chart['Close'].rolling(window=window_size).mean()
     #14-Tage-Standardabweichung

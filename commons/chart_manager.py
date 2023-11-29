@@ -6,6 +6,7 @@ import numpy.typing as npt
 
 
 class ChartManager:
+    original_chart: pd.DataFrame = None
     chart: pd.DataFrame = None
 
     def __init__(self):
@@ -17,6 +18,7 @@ class ChartManager:
         df["Date"] = pd.to_datetime(df["Date"])
 
         self.chart = df
+        self.original_chart = df.copy()
 
     def calculate_return(self, signals: Sequence[int]) -> Sequence[float]:
         if self.chart is None:
