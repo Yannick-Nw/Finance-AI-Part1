@@ -11,16 +11,16 @@ import numpy as np
 import datetime as dt
 
 from commons import *
-from lib.visualization.plot_stock_strategy import plot_profit_fields
+#from lib.Visualization.plot_stock_strategy import plot_profit_fields
 
 
 
 def run():
     # Load data
     chart_manager = ChartManager()
-    chart_manager.load("MSCI GLOBAL")
+    chart_manager.load("Data/MSCI GLOBAL.csv")
 
-    window_size = 40
+    window_size = 30
     #14-Tage MA
     ma_data = chart_manager.chart['Close'].rolling(window=window_size).mean()
     #14-Tage-Standardabweichung
@@ -38,6 +38,92 @@ def run():
     std_data = std_data.iloc[shift_n:].reset_index(drop=True)
     upper_band_data = upper_band_data.iloc[shift_n:].reset_index(drop=True)
     lower_band_data = lower_band_data.iloc[shift_n:].reset_index(drop=True)
+
+    
+
+    """
+    Plot investing results
+    """
+    signals = [0] * len(chart_manager.chart)
+    out_of_bands = False
+    long_buy_points = []
+    long_sell_points = []
+    short_buy_points = []
+    short_sell_points = []
+
+    for i in range(1, len(chart_manager.chart)):
+        current_close = chart_manager.chart['Close'].iloc[i]
+        previous_close = chart_manager.chart['Close'].iloc[i-1]
+        current_lowest_price = chart_manager.chart['Low'].iloc[i]
+        current_highest_price = chart_manager.chart['High'].iloc[i]
+        previous_highest_price = chart_manager.chart['High'].iloc[i-1]
+        previous_lowest_price = chart_manager.chart['Low'].iloc[i - 1]
+        lower_band = lower_band_data.iloc[i]
+        upper_band = upper_band_data.iloc[i]
+        current_ma = ma_data.iloc[i]
+        previous_ma = ma_data.iloc[i - 1]
+        
+        
+        if out_of_bands == True and (current_close > upper_band or current_close < lower_band) and signals[i-1]==0:
+            continue
+        elif out_of_bands == True and previous_highest_price > upper_band and current_close < upper_band:
+            signals[i] = -1
+            short_buy_points.append(i)
+            out_of_bands = False
+            continue
+        elif out_of_bands == True and previous_lowest_price > lower_band and current_close > lower_band:
+            signals[i] = 1
+            long_buy_points.append(i)
+            out_of_bands = False
+            continue
+
+        """
+        Long signals
+        """
+        if previous_close < current_ma and current_close > current_ma and signals[i-1] == 0:
+            signals[i] = 1
+            long_buy_points.append(i)
+            continue
+        
+        if signals[i - 1] == 1:
+            # Verkaufssignal für Long-Position
+            if current_highest_price > upper_band:
+                signals[i] = 0
+                long_sell_points.append(i)
+                out_of_bands = True
+                continue
+            # Verkaufssignal für Long-Position
+            elif previous_lowest_price > previous_ma and current_close < current_ma:
+                signals[i] = -1
+                long_sell_points.append(i)
+                short_buy_points.append(i)
+                continue
+
+        """
+        Short signals
+        """
+        # Short-Signal: Schneidet MA von oben
+        if previous_lowest_price > current_ma and current_close < current_ma and signals[i-1] == 0:
+            signals[i] = -1
+            short_buy_points.append(i)
+            continue
+        
+        # Verkaufssignal für Short-Position
+        if signals[i - 1] == -1:
+            if current_lowest_price < lower_band:
+                signals[i] = 0
+                short_sell_points.append(i)
+                out_of_bands = True
+                continue
+            if previous_highest_price < previous_ma and current_close > current_ma:
+                signals[i] = 1
+                short_sell_points.append(i)
+                long_buy_points.append(i)
+                continue
+
+        signals[i] = signals[i - 1]
+  
+    algorithm_course = chart_manager.calculate_return(signals)
 
     """
     Plot indicators with chart
@@ -62,54 +148,27 @@ def run():
         color="blue",
     )
 
-    """
-    Plot investing results
-    """
-    signals = [0] * len(chart_manager.chart)
+    # Pfeile hinzufügen
+    for index in long_buy_points:
+        plt.annotate('', xy=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index]), 
+                    xytext=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index] - 2), 
+                    arrowprops=dict(edgecolor='green', arrowstyle='->'))
 
-    for i in range(1, len(chart_manager.chart)):
-        current_close = chart_manager.chart['Close'].iloc[i]
-        previous_close = chart_manager.chart['Close'].iloc[i - 1]
-        current_ma = ma_data.iloc[i]
-        previous_ma = ma_data.iloc[i - 1]
-        
-        """
-        Long signals
-        """
-        if previous_close <= previous_ma and current_close >= current_ma and (current_close-previous_close)>=previous_close/100 and signals[i] == 0:
-            signals[i] = 1
-            continue
-        
-        if signals[i - 1] == 1:
-            # Verkaufssignal für Long-Position
-            if current_close > upper_band_data.iloc[i]:
-                signals[i] = 0
-                continue
-            # Verkaufssignal für Long-Position
-            elif current_close < current_ma:
-                signals[i] = -1
-                continue
+    for index in long_sell_points:
+        plt.annotate('', xy=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index]), 
+                    xytext=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index] + 2), 
+                    arrowprops=dict(edgecolor='red', arrowstyle='->'))
+    
+    for index in short_buy_points:
+        plt.annotate('', xy=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index]), 
+                    xytext=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index] - 2), 
+                    arrowprops=dict(edgecolor='blue', arrowstyle='->'))
+    
+    for index in short_sell_points:
+        plt.annotate('', xy=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index]), 
+                    xytext=(chart_manager.chart['Date'].iloc[index], chart_manager.chart['Close'].iloc[index] + 2), 
+                    arrowprops=dict(edgecolor='orange', arrowstyle='->'))
 
-        """
-        Short signals
-        """
-        # Short-Signal: Schneidet MA von oben
-        if previous_close >= previous_ma and current_close <= current_ma and signals[i] == 0:
-            signals[i] = -1
-            continue
-        
-        # Verkaufssignal für Short-Position
-        if signals[i - 1] == -1:
-            if current_close < lower_band_data.iloc[i]:
-                signals[i] = 0
-                continue
-            if current_close > current_ma:
-                signals[i] = 1
-                continue
-
-        signals[i] = signals[i - 1]
-        
-    algorithm_course = chart_manager.calculate_return(signals)
 
     plt.legend(loc="upper left")
     fig, axes = plt.subplots(1, 1, num=2)
