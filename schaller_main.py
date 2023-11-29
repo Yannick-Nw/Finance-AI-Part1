@@ -11,7 +11,7 @@ import datetime as dt
 def run():
     chart_manager = ChartManager()
     # Seconds needs to be higher
-    averages = [i for i in range(10, 1000, 2)]
+    averages = [i for i in range(10, 100, 2)]
 
     combos = set(itertools.combinations(averages, 2))
     combos = [com for com in combos if com[1] > com[0]]

@@ -21,7 +21,7 @@ import numpy as np
 from pandas import DataFrame
 
 
-def plot_profit_fields(ax: Axes, signals: list[bool], chart: list[float], dates):
+def plot_profit_fields(ax: Axes, signals: list[bool], chart: list[float], dates, ):
     max_y = max(chart)
     last_action_entry = (0, chart[0])
     for i, signal in enumerate(signals[1:], start=1):
